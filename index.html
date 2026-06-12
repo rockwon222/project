@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Family Album</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #7a8d84; /* Default muted sage */
+            --bg-color: #fdfbf7;
+        }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-color);
+            transition: background-color 0.3s ease;
+        }
+        .primary-bg { background-color: var(--primary-color); }
+        .primary-text { color: var(--primary-color); }
+        .primary-border { border-color: var(--primary-color); }
+
+        .rounded-custom { border-radius: 1.5rem; } /* 24px */
+        .rounded-custom-lg { border-radius: 2rem; } /* 32px */
+
+        #main-bg-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+            transition: background-image 0.5s ease, opacity 0.5s ease;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Background Image Layer -->
+    <div id="main-bg-overlay"></div>
+
+    <!-- Top Navigation -->
+    <nav class="fixed top-0 left-0 w-full px-6 py-4 flex justify-between items-center z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 primary-bg rounded-full flex items-center justify-center text-white font-bold shadow-lg">👨‍👩‍👧</div>
+            <h1 class="text-xl font-medium text-slate-700 tracking-tight">우리 가족 앨범</h1>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="openSettings()" class="p-3 bg-white/80 backdrop-blur-md text-slate-600 rounded-full hover:bg-white transition-all shadow-sm border border-slate-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543 1.543 2.573 3.073 2.573 4.67.001 1.601-1.03 3.131-2.573 4.67a1.724 1.724 0 00-1.066 2.573c-1.756 0.426-1.756 2.924 0 3.35a1.724 1.724 0 001.066 2.573c1.543 1.543 3.073 2.573 4.67 2.573a1.606 1.606 0 001.228-0.467l2.105-2.105a1.606 1.606 0 000-2.268l-2.105-2.105a1.606 1.606 0 00-2.268 0l-2.105 2.105a1.606 1.606 0 00-1.228 0.467c-1.543 1.543-3.073 2.573-4.67 2.573a1.606 1.606 0 00-1.228-0.467l-2.105-2.105a1.606 1.606 0 00-2.268 0l-2.105 2.105a1.606 1.606 0 00-1.228 0.467c-1.543 1.543-3.073 2.573-4.67 2.573a1.606 1.606 0 00-1.228-0.467l-2.105-2.105a1.606 1.606 0 000-2.268l2.105-2.105a1.606 1.606 0 002.268 0l2.105-2.105a1.606 1.606 0 001.228-0.467c1.543-1.543 3.073-2.573 4.67-2.573a1.606 1.606 0 001.228 0.467l2.105 2.105a1.606 1.606 0 002.268 0l2.105-2.105a1.606 1.606 0 00-1.228-0.467c-1.543-1.543-3.073-2.573-4.67-2.573a1.606 1.606 0 00-1.228 0.467" />
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-6 max-w-7xl mx-auto">
+
+        <!-- Favorites Section -->
+        <section id="favorites-section" class="mb-12 hidden">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-xl">⭐</span>
+                <h2 class="text-lg font-medium text-slate-700">즐겨찾는 사진</h2>
+            </div>
+            <div id="favorites-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- Favorite photos here -->
+            </div>
+        </section>
+
+        <!-- Folder Section -->
+        <section>
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">📂</span>
+                    <h2 class="text-lg font-medium text-slate-700">가족 폴더</h2>
+                </div>
+                <button onclick="createFolder()" class="px-4 py-2 primary-bg text-white rounded-custom text-sm font-medium hover:opacity-90 shadow-sm transition-all">
+                    + 새 폴더 만들기
+                </button>
+            </div>
+
+            <div id="folder-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Folders here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Folder Detail Modal -->
+    <div id="folder-modal" class="fixed inset-0 z-[60] hidden bg-black/30 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-4xl h-[80vh] rounded-custom-lg shadow-2xl flex flex-col overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div class="flex items-center gap-3">
+                    <button onclick="closeFolder()" class="p-2 hover:bg-slate-200 rounded-full transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <h3 id="modal-folder-name" class="text-xl font-medium text-slate-700">폴더 이름</h3>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="renameCurrentFolder()" class="px-3 py-1.5 text-sm text-slate-500 hover:text-slate-700 border border-slate-200 rounded-full transition-all">이름 변경</button>
+                    <button onclick="openUpload()" class="px-4 py-1.5 text-sm primary-bg text-white rounded-full hover:opacity-90 shadow-sm transition-all">+ 사진 추가</button>
+                </div>
+            </div>
+            <div id="photo-grid" class="flex-1 overflow-y-auto p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 content-start">
+                <!-- Photos here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 z-[70] hidden bg-black/40 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-custom-lg shadow-2xl p-8">
+            <h2 class="text-xl font-medium text-slate-700 mb-6">앨범 설정</h2>
+
+            <div class="space-y-6">
+                <!-- Theme Color -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm text-slate-500">포인트 색상 선택</label>
+                    <div class="flex items-center gap-4">
+                        <input type="color" id="color-picker" oninput="updateThemeColor(this.value)" class="w-12 h-12 rounded-full border-none cursor-pointer">
+                        <span id="color-code" class="text-xs monospace text-slate-400">#7a8d84</span>
+                    </div>
+                </div>
+
+                <!-- Background Color -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm text-slate-500">기본 배경색</label>
+                    <div class="flex items-center gap-4">
+                        <input type="color" id="bg-picker" oninput="updateBgColor(this.value)" class="w-12 h-12 rounded-full border-none cursor-pointer">
+                        <span id="bg-code" class="text-xs monospace text-slate-400">#fdfbf7</span>
+                    </div>
+                </div>
+
+                <!-- Background Image -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm text-slate-500">배경 이미지 설정</label>
+                    <div class="flex items-center gap-3">
+                        <input type="file" id="bg-upload" accept="image/*" onchange="updateBgImage(this)" class="hidden">
+                        <button onclick="document.getElementById('bg-upload').click()" class="flex-1 px-4 py-3 border-2 border-dashed border-slate-200 rounded-custom text-sm text-slate-400 hover:border-slate-300 hover:text-slate-500 transition-all">
+                            사진 업로드하기
+                        </button>
+                        <button onclick="resetBgImage()" id="reset-bg-btn" class="px-4 py-3 bg-slate-100 text-slate-500 rounded-custom text-sm hover:bg-slate-200 transition-all opacity-0 pointer-events-none">
+                            초기화
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-10 flex justify-end">
+                <button onclick="closeSettings()" class="px-6 py-2 bg-slate-100 text-slate-600 rounded-full text-sm font-medium hover:bg-slate-200 transition-all">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        let state = {
+            folders: [],
+            favorites: [],
+            settings: {
+                primaryColor: '#7a8d84',
+                bgColor: '#fdfbf7',
+                backgroundImage: ''
+            }
+        };
+
+        function saveState() {
+            localStorage.setItem('family-album-state', JSON.stringify(state));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('family-album-state');
+            if (saved) {
+                state = JSON.parse(saved);
+                applyTheme();
+            }
+        }
+
+        function render() {
+            const folderGrid = document.getElementById('folder-grid');
+            folderGrid.innerHTML = '';
+
+            state.folders.forEach(folder => {
+                const div = document.createElement('div');
+                div.className = 'group bg-white p-6 rounded-custom shadow-sm border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all cursor-pointer flex flex-col items-center text-center gap-4';
+                div.onclick = () => openFolder(folder.id);
+                div.innerHTML = `
+                    <div class="w-20 h-20 bg-slate-100 rounded-custom flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">📂</div>
+                    <div class="w-full">
+                        <h3 class="font-medium text-slate-700 mb-1">${folder.name}</h3>
+                        <p class="text-xs text-slate-400">${folder.photos.length}장의 사진</p>
+                    </div>
+                `;
+                folderGrid.appendChild(div);
+            });
+
+            const favGrid = document.getElementById('favorites-grid');
+            const favSection = document.getElementById('favorites-section');
+            favGrid.innerHTML = '';
+
+            if (state.favorites.length > 0) {
+                favSection.classList.remove('hidden');
+                state.favorites.forEach(photoId => {
+                    const photo = findPhotoById(photoId);
+                    if (photo) {
+                        const div = document.createElement('div');
+                        div.className = 'relative aspect-square rounded-custom overflow-hidden shadow-sm group';
+                        div.innerHTML = `
+                            <img src="${photo.url}" class="w-full h-full object-cover">
+                            <button onclick="toggleFavorite('${photo.id}', event)" class="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm rounded-full text-yellow-500 shadow-sm opacity-0 group-hover:opacity-100 transition-all">⭐</button>
+                        `;
+                        favGrid.appendChild(div);
+                    }
+                });
+            } else {
+                favSection.classList.add('hidden');
+            }
+        }
+
+        function findPhotoById(id) {
+            for (const folder of state.folders) {
+                const photo = folder.photos.find(p => p.id === id);
+                if (photo) return photo;
+            }
+            return null;
+        }
+
+        function createFolder() {
+            const name = prompt('폴더 이름을 입력하세요:');
+            if (name) {
+                state.folders.push({
+                    id: 'f_' + Date.now(),
+                    name: name,
+                    photos: []
+                });
+                saveState();
+                render();
+            }
+        }
+
+        let currentFolderId = null;
+        function openFolder(id) {
+            currentFolderId = id;
+            const folder = state.folders.find(f => f.id === id);
+            document.getElementById('modal-folder-name').innerText = folder.name;
+            document.getElementById('folder-modal').classList.remove('hidden');
+            renderPhotos();
+        }
+
+        function closeFolder() {
+            document.getElementById('folder-modal').classList.add('hidden');
+            currentFolderId = null;
+        }
+
+        function renderPhotos() {
+            const grid = document.getElementById('photo-grid');
+            grid.innerHTML = '';
+            const folder = state.folders.find(f => f.id === currentFolderId);
+
+            folder.photos.forEach(photo => {
+                const isFav = state.favorites.includes(photo.id);
+                const div = document.createElement('div');
+                div.className = 'relative aspect-[4/3] rounded-custom overflow-hidden shadow-sm group border-2 ' + (isFav ? 'border-yellow-400' : 'border-transparent');
+                div.innerHTML = `
+                    <img src="${photo.url}" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <button onclick="toggleFavorite('${photo.id}', event)" class="p-2 bg-white rounded-full text-sm ${isFav ? 'text-yellow-500' : 'text-slate-400'} hover:scale-110 transition-transform">⭐</button>
+                        <button onclick="deletePhoto('${photo.id}', event)" class="p-2 bg-white rounded-full text-sm text-red-400 hover:scale-110 transition-transform">🗑️</button>
+                    </div>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function openUpload() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.multiple = true;
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+                const files = Array.from(e.target.files);
+                const folder = state.folders.find(f => f.id === currentFolderId);
+                files.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        folder.photos.push({
+                            id: 'p_' + Math.random().toString(36).substr(2, 9),
+                            url: ev.target.result
+                        });
+                        saveState();
+                        renderPhotos();
+                        render();
+                    };
+                    reader.readAsDataURL(file);
+                });
+            };
+            input.click();
+        }
+
+        function toggleFavorite(photoId, event) {
+            event.stopPropagation();
+            const idx = state.favorites.indexOf(photoId);
+            if (idx > -1) {
+                state.favorites.splice(idx, 1);
+            } else {
+                state.favorites.push(photoId);
+            }
+            saveState();
+            render();
+            renderPhotos();
+        }
+
+        function deletePhoto(photoId, event) {
+            event.stopPropagation();
+            const folder = state.folders.find(f => f.id === currentFolderId);
+            folder.photos = folder.photos.filter(p => p.id !== photoId);
+            state.favorites = state.favorites.filter(id => id !== photoId);
+            saveState();
+            renderPhotos();
+            render();
+        }
+
+        function renameCurrentFolder() {
+            const folder = state.folders.find(f => f.id === currentFolderId);
+            const newName = prompt('새 폴더 이름을 입력하세요:', folder.name);
+            if (newName) {
+                folder.name = newName;
+                document.getElementById('modal-folder-name').innerText = newName;
+                saveState();
+                render();
+            }
+        }
+
+        function openSettings() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+            document.getElementById('color-picker').value = state.settings.primaryColor;
+            document.getElementById('bg-picker').value = state.settings.bgColor;
+            document.getElementById('color-code').innerText = state.settings.primaryColor;
+            document.getElementById('bg-code').innerText = state.settings.bgColor;
+
+            // Update Reset Button visibility
+            const resetBtn = document.getElementById('reset-bg-btn');
+            if (state.settings.backgroundImage) {
+                resetBtn.classList.remove('opacity-0', 'pointer-events-none');
+            } else {
+                resetBtn.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function updateThemeColor(color) {
+            state.settings.primaryColor = color;
+            document.getElementById('color-code').innerText = color;
+            applyTheme();
+            saveState();
+        }
+
+        function updateBgColor(color) {
+            state.settings.bgColor = color;
+            document.getElementById('bg-code').innerText = color;
+            applyTheme();
+            saveState();
+        }
+
+        function updateBgImage(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    state.settings.backgroundImage = e.target.result;
+                    applyTheme();
+                    saveState();
+
+                    // Update Reset Button
+                    const resetBtn = document.getElementById('reset-bg-btn');
+                    resetBtn.classList.remove('opacity-0', 'pointer-events-none');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function resetBgImage() {
+            state.settings.backgroundImage = '';
+            applyTheme();
+            saveState();
+
+            // Update Reset Button
+            const resetBtn = document.getElementById('reset-bg-btn');
+            resetBtn.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function applyTheme() {
+            document.documentElement.style.setProperty('--primary-color', state.settings.primaryColor);
+            document.documentElement.style.setProperty('--bg-color', state.settings.bgColor);
+            document.getElementById('main-bg-overlay').style.backgroundImage = `url(${state.settings.backgroundImage})`;
+            document.getElementById('main-bg-overlay').style.opacity = state.settings.backgroundImage ? '0.4' : '0';
+        }
+
+        loadState();
+        render();
+    </script>
+</body>
+</html>
